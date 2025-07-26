@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gun.js Decentralized Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        #chat-container { max-width: 500px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 20px; }
+        #messages { height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-bottom: 10px; background: #fafafa; }
+        #input-form { display: flex; }
+        #username, #message { flex: 1; padding: 8px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        #send { padding: 8px 16px; border: none; background: #007bff; color: #fff; border-radius: 4px; cursor: pointer; }
+        #send:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h2>Gun.js Decentralized Chat</h2>
+        <div id="auth-section">
+            <input type="text" id="auth-username" placeholder="Username" required />
+            <input type="password" id="auth-password" placeholder="Password" required />
+            <button id="login-btn">Login</button>
+            <button id="register-btn">Register</button>
+            <span id="auth-status"></span>
+        </div>
+        <div id="room-section" style="display:none; margin-top:10px;">
+            <input type="text" id="room-name" placeholder="Room name" required />
+            <button id="join-room-btn">Join Room</button>
+            <span id="room-status"></span>
+        </div>
+        <div id="chat-section" style="display:none;">
+            <div id="room-title"></div>
+            <div id="messages"></div>
+            <form id="input-form">
+                <input type="text" id="message" placeholder="Type a message..." required />
+                <button id="send" type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+    <script>
+        // Use a public Gun relay peer for global connectivity
+        const gun = Gun({
+            peers: [
+                'https://gun-manhattan.herokuapp.com/gun',
+                'https://gunjs.herokuapp.com/gun'
+            ]
+        });
+        const user = gun.user();
+        let currentRoom = null;
+
+        // Elements
+        const authSection = document.getElementById('auth-section');
+        const authUsername = document.getElementById('auth-username');
+        const authPassword = document.getElementById('auth-password');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const authStatus = document.getElementById('auth-status');
+        const roomSection = document.getElementById('room-section');
+        const roomNameInput = document.getElementById('room-name');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+        const roomStatus = document.getElementById('room-status');
+        const chatSection = document.getElementById('chat-section');
+        const roomTitle = document.getElementById('room-title');
+        const messagesDiv = document.getElementById('messages');
+        const form = document.getElementById('input-form');
+        const messageInput = document.getElementById('message');
+
+        // Auth handlers
+        loginBtn.onclick = async () => {
+            const username = authUsername.value.trim();
+            const password = authPassword.value;
+            if (!username || !password) return;
+            user.auth(username, password, (ack) => {
+                if (ack.err) {
+                    authStatus.textContent = 'Login failed!';
+                } else {
+                    authStatus.textContent = 'Logged in!';
+                    authSection.style.display = 'none';
+                    roomSection.style.display = '';
+                }
+            });
+        };
+        registerBtn.onclick = async () => {
+            const username = authUsername.value.trim();
+            const password = authPassword.value;
+            if (!username || !password) return;
+            user.create(username, password, (ack) => {
+                if (ack.err) {
+                    authStatus.textContent = 'Register failed!';
+                } else {
+                    authStatus.textContent = 'Registered! Please login.';
+                }
+            });
+        };
+
+        // Room join handler
+        joinRoomBtn.onclick = () => {
+            const room = roomNameInput.value.trim();
+            if (!room) return;
+            currentRoom = room;
+            roomStatus.textContent = '';
+            roomSection.style.display = 'none';
+            chatSection.style.display = '';
+            roomTitle.textContent = 'Room: ' + room;
+            messagesDiv.innerHTML = '';
+            listenForMessages();
+        };
+
+        // Listen for messages in the current room
+        function listenForMessages() {
+            messagesDiv.innerHTML = '';
+            if (!currentRoom) return;
+            const chat = gun.get('gun-chat-room-' + currentRoom);
+            chat.map().on((data, id) => {
+                if (!data || !data.message || !data.username) return;
+                const msg = document.createElement('div');
+                msg.textContent = `${data.username}: ${data.message}`;
+                messagesDiv.appendChild(msg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+
+        // Send a message
+        form.onsubmit = e => {
+            e.preventDefault();
+            if (!currentRoom) return;
+            const message = messageInput.value.trim();
+            if (!message) return;
+            const username = user.is && user.is.alias ? user.is.alias : 'Anonymous';
+            const chat = gun.get('gun-chat-room-' + currentRoom);
+            chat.set({ username, message, timestamp: Date.now() });
+            messageInput.value = '';
+        };
+    </script>
+</body>
+</html>
