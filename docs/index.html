@@ -91,11 +91,7 @@
       // Use a public Gun relay peer for global connectivity
       // Use a more reliable Gun relay (official relay and community relays)
       const gun = Gun({
-        peers: [
-          "https://relay.peer.ooo/gun", // Official relay
-          "https://gun-matrix.herokuapp.com/gun",
-          "https://gunjs.herokuapp.com/gun",
-        ],
+        peers: ["https://chatroombackend-jf36.onrender.com/gun"],
       });
 
       // Show connection status in UI
