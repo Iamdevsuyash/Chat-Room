@@ -2,7 +2,7 @@
   "name": "gun-chat-dapp",
   "version": "1.0.0",
   "description": "A decentralized chat app using Gun.js",
-  "main": "public/index.html",
+  "main": "docs/index.html",
   "scripts": {
     "start": "npx serve public -l 3000"
   },
