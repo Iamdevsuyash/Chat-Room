@@ -45,8 +45,20 @@
         const gun = Gun({
             peers: [
                 'https://gun-manhattan.herokuapp.com/gun',
-                'https://gunjs.herokuapp.com/gun'
+                'https://gunjs.herokuapp.com/gun',
+                'https://gun-eu.herokuapp.com/gun',
+                'https://gun-us.herokuapp.com/gun',
+                'https://gun-matrix.herokuapp.com/gun',
+                'https://gun-ams1.herokuapp.com/gun'
             ]
+        });
+
+        // Debug Gun connection status
+        gun.on('hi', peer => {
+            console.log('Connected to peer:', peer.url);
+        });
+        gun.on('bye', peer => {
+            console.log('Disconnected from peer:', peer.url);
         });
         const user = gun.user();
         let currentRoom = null;
