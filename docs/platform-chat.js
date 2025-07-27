@@ -43,16 +43,43 @@ darkToggle.onclick = () => {
 
 // Initial
 const mainSection = document.getElementById("main");
+let logoutBtn;
 function showChatUI() {
   authSection.style.display = "none";
   mainSection.style.display = "flex";
   loadTeams();
+  // Add logout button if not present
+  if (!logoutBtn) {
+    logoutBtn = document.createElement("button");
+    logoutBtn.textContent = "Logout";
+    logoutBtn.className = "add-btn";
+    logoutBtn.style.marginLeft = "16px";
+    logoutBtn.onclick = () => {
+      user.leave();
+      showLoginUI();
+      // Clear UI state
+      teamList.innerHTML = "";
+      roomList.innerHTML = "";
+      messagesDiv.innerHTML = "";
+      userList.innerHTML = "";
+      roomTitle.textContent = "Select a room";
+      authStatus.textContent = "";
+      authUsername.value = "";
+      authPassword.value = "";
+    };
+    document.getElementById("sidebar").appendChild(logoutBtn);
+  }
 }
 function showLoginUI() {
   authSection.style.display = "flex";
   mainSection.style.display = "none";
+  if (logoutBtn) logoutBtn.remove();
+  logoutBtn = null;
 }
-if (user.is && user.is.alias) {
+function isAuthenticated() {
+  return user.is && user.is.alias;
+}
+if (isAuthenticated()) {
   showChatUI();
 } else {
   showLoginUI();
@@ -62,7 +89,10 @@ if (user.is && user.is.alias) {
 loginBtn.onclick = async () => {
   const username = authUsername.value.trim();
   const password = authPassword.value;
-  if (!username || !password) return;
+  if (!username || !password) {
+    authStatus.textContent = "Username and password required.";
+    return;
+  }
   user.auth(username, password, (ack) => {
     if (ack.err) {
       authStatus.textContent = "Login failed!";
@@ -75,7 +105,10 @@ loginBtn.onclick = async () => {
 registerBtn.onclick = async () => {
   const username = authUsername.value.trim();
   const password = authPassword.value;
-  if (!username || !password) return;
+  if (!username || !password) {
+    authStatus.textContent = "Username and password required.";
+    return;
+  }
   user.create(username, password, (ack) => {
     if (ack.err) {
       authStatus.textContent = "Register failed!";
