@@ -184,29 +184,22 @@ function selectRoom(room) {
   listenForUsers();
 }
 
-function listenForUsers() {
-  userList.innerHTML = "";
-  const users = gun.get(`team-${currentTeam}-room-${currentRoom}-users`);
-  users.map().on((data, id) => {
-    if (!data || !data.username) return;
-    const avatar = document.createElement("div");
-    avatar.className = "user-avatar";
-    avatar.textContent = data.username[0].toUpperCase();
-    avatar.title = data.username;
-    userList.appendChild(avatar);
-  });
-  // Add self
-  users.get(user.is.alias).put({ username: user.is.alias });
-}
+// Track Gun listeners to prevent duplicates
+let messagesListener = null;
+let usersListener = null;
 
-// Listen for messages
 function listenForMessages() {
   messagesDiv.innerHTML = "";
+  // Remove previous listener if exists
+  if (messagesListener) messagesListener.off();
   const chat = gun.get(`team-${currentTeam}-room-${currentRoom}-chat`);
-  chat.map().on((data, id) => {
+  messagesListener = chat.map().on((data, id) => {
     if (!data || !data.message || !data.username) return;
+    // Prevent duplicate DOM nodes for same message
+    if (document.getElementById("msg-" + id)) return;
     const msg = document.createElement("div");
     msg.className = "msg";
+    msg.id = "msg-" + id;
     msg.innerHTML = `<div class='meta'>${
       data.username
     } <span style='float:right;'>${new Date(
@@ -220,6 +213,25 @@ function listenForMessages() {
     messagesDiv.appendChild(msg);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
+}
+
+function listenForUsers() {
+  userList.innerHTML = "";
+  // Remove previous listener if exists
+  if (usersListener) usersListener.off();
+  const users = gun.get(`team-${currentTeam}-room-${currentRoom}-users`);
+  usersListener = users.map().on((data, id) => {
+    if (!data || !data.username) return;
+    if (document.getElementById("user-" + id)) return;
+    const avatar = document.createElement("div");
+    avatar.className = "user-avatar";
+    avatar.id = "user-" + id;
+    avatar.textContent = data.username[0].toUpperCase();
+    avatar.title = data.username;
+    userList.appendChild(avatar);
+  });
+  // Add self
+  users.get(user.is.alias).put({ username: user.is.alias });
 }
 
 // Send a message
