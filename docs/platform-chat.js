@@ -41,6 +41,23 @@ darkToggle.onclick = () => {
   localStorage.setItem("dark-theme", document.body.classList.contains("dark"));
 };
 
+// Initial
+const mainSection = document.getElementById("main");
+function showChatUI() {
+  authSection.style.display = "none";
+  mainSection.style.display = "flex";
+  loadTeams();
+}
+function showLoginUI() {
+  authSection.style.display = "flex";
+  mainSection.style.display = "none";
+}
+if (user.is && user.is.alias) {
+  showChatUI();
+} else {
+  showLoginUI();
+}
+
 // Auth handlers
 loginBtn.onclick = async () => {
   const username = authUsername.value.trim();
@@ -51,8 +68,7 @@ loginBtn.onclick = async () => {
       authStatus.textContent = "Login failed!";
     } else {
       authStatus.textContent = "Logged in!";
-      authSection.style.display = "none";
-      loadTeams();
+      showChatUI();
     }
   });
 };
@@ -183,14 +199,6 @@ function escapeHtml(str) {
         tag
       ])
   );
-}
-
-// Initial
-if (user.is && user.is.alias) {
-  authSection.style.display = "none";
-  loadTeams();
-} else {
-  authSection.style.display = "";
 }
 
 // Show room join for direct join (optional)
