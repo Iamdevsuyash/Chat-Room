@@ -69,6 +69,8 @@ function showChatUI() {
     };
     document.getElementById("sidebar").appendChild(logoutBtn);
   }
+  // Always reload rooms for current team
+  if (currentTeam) loadRooms();
 }
 function showLoginUI() {
   authSection.style.display = "flex";
@@ -129,6 +131,7 @@ addRoomBtn.onclick = () => {
   const name = prompt("Room name?");
   if (!name) return;
   gun.get(`team-${currentTeam}-rooms`).set({ name });
+  setTimeout(loadRooms, 500); // Refresh room list after adding
 };
 
 function loadTeams() {
@@ -149,6 +152,11 @@ function selectTeam(team) {
   currentTeam = team;
   loadTeams();
   loadRooms();
+  // Clear current room selection
+  currentRoom = null;
+  roomTitle.textContent = `${currentTeam} / Select a room`;
+  messagesDiv.innerHTML = "";
+  userList.innerHTML = "";
 }
 function loadRooms() {
   roomList.innerHTML = "";
@@ -169,11 +177,13 @@ function selectRoom(room) {
   roomTitle.textContent = `${currentTeam} / ${room}`;
   messagesDiv.innerHTML = "";
   userList.innerHTML = "";
+  // Show chat panel and input form
+  document.getElementById("chat-panel").style.display = "flex";
+  document.getElementById("input-form").style.display = "flex";
   listenForMessages();
   listenForUsers();
 }
 
-// User presence (simple, not perfect)
 function listenForUsers() {
   userList.innerHTML = "";
   const users = gun.get(`team-${currentTeam}-room-${currentRoom}-users`);
@@ -239,6 +249,16 @@ joinRoomBtn.onclick = () => {
   const room = roomNameInput.value.trim();
   if (!room || !currentTeam) return;
   selectRoom(room);
+  // Optionally, add to room list if not present
+  gun
+    .get(`team-${currentTeam}-rooms`)
+    .map()
+    .once((data) => {
+      if (!data || data.name !== room) {
+        gun.get(`team-${currentTeam}-rooms`).set({ name: room });
+        setTimeout(loadRooms, 500);
+      }
+    });
 };
 
 // Connection status (optional)
