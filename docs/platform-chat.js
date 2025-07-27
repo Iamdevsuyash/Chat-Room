@@ -185,18 +185,20 @@ function selectRoom(room) {
 }
 
 // Track Gun listeners to prevent duplicates
-let messagesListener = null;
-let usersListener = null;
+let messagesListenerNode = null;
+let usersListenerNode = null;
+let shownMessageIds = new Set();
 
 function listenForMessages() {
   messagesDiv.innerHTML = "";
+  shownMessageIds.clear();
   // Remove previous listener if exists
-  if (messagesListener) messagesListener.off();
+  if (messagesListenerNode) messagesListenerNode.off();
   const chat = gun.get(`team-${currentTeam}-room-${currentRoom}-chat`);
-  messagesListener = chat.map().on((data, id) => {
+  messagesListenerNode = chat.map().on((data, id) => {
     if (!data || !data.message || !data.username) return;
-    // Prevent duplicate DOM nodes for same message
-    if (document.getElementById("msg-" + id)) return;
+    if (shownMessageIds.has(id)) return;
+    shownMessageIds.add(id);
     const msg = document.createElement("div");
     msg.className = "msg";
     msg.id = "msg-" + id;
@@ -217,10 +219,9 @@ function listenForMessages() {
 
 function listenForUsers() {
   userList.innerHTML = "";
-  // Remove previous listener if exists
-  if (usersListener) usersListener.off();
+  if (usersListenerNode) usersListenerNode.off();
   const users = gun.get(`team-${currentTeam}-room-${currentRoom}-users`);
-  usersListener = users.map().on((data, id) => {
+  usersListenerNode = users.map().on((data, id) => {
     if (!data || !data.username) return;
     if (document.getElementById("user-" + id)) return;
     const avatar = document.createElement("div");
