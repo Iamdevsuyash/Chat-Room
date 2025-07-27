@@ -5,202 +5,272 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gun.js Decentralized Chat</title>
     <style>
+      :root {
+        --bg: #181a20;
+        --panel: #23272e;
+        --accent: #00bfae;
+        --accent2: #ffb86c;
+        --text: #eaeaea;
+        --text-dim: #888;
+        --border: #282c34;
+        --danger: #ff5555;
+        --font: "Fira Mono", "JetBrains Mono", "Consolas", monospace;
+      }
       body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
+        font-family: var(--font);
+        background: var(--bg);
         margin: 0;
         padding: 0;
+        color: var(--text);
       }
-      #chat-container {
-        max-width: 500px;
-        margin: 40px auto;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px #ccc;
-        padding: 20px;
+      #main {
+        display: flex;
+        min-height: 100vh;
+      }
+      #sidebar {
+        width: 260px;
+        background: var(--panel);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        padding: 24px 0 0 0;
+      }
+      #sidebar h3 {
+        color: var(--accent);
+        margin: 0 0 16px 32px;
+        font-size: 1.2em;
+        letter-spacing: 1px;
+      }
+      #team-list,
+      #room-list {
+        list-style: none;
+        padding: 0 0 0 32px;
+        margin: 0 0 24px 0;
+      }
+      #team-list li,
+      #room-list li {
+        margin-bottom: 8px;
+        cursor: pointer;
+        color: var(--text-dim);
+        transition: color 0.2s;
+      }
+      #team-list li.active,
+      #room-list li.active,
+      #team-list li:hover,
+      #room-list li:hover {
+        color: var(--accent2);
+      }
+      #sidebar .add-btn {
+        margin: 0 0 0 32px;
+        color: var(--accent2);
+        background: none;
+        border: none;
+        font-size: 1em;
+        cursor: pointer;
+      }
+      #chat-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        min-width: 0;
+      }
+      #chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 32px;
+      }
+      #chat-header h2 {
+        margin: 0;
+        font-size: 1.3em;
+        color: var(--accent);
+      }
+      #user-list {
+        display: flex;
+        gap: 8px;
+      }
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--border);
+        color: var(--accent2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1em;
+        border: 2px solid var(--accent2);
       }
       #messages {
-        height: 300px;
+        flex: 1;
         overflow-y: auto;
-        border: 1px solid #eee;
-        padding: 10px;
-        margin-bottom: 10px;
-        background: #fafafa;
+        padding: 24px 32px 0 32px;
+        background: var(--bg);
+        border: none;
+        min-height: 300px;
+      }
+      .msg {
+        margin-bottom: 18px;
+        padding: 12px 16px;
+        background: var(--panel);
+        border-radius: 6px;
+        border-left: 4px solid var(--accent2);
+        color: var(--text);
+        font-size: 1em;
+        position: relative;
+        word-break: break-word;
+      }
+      .msg .meta {
+        font-size: 0.85em;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+      }
+      .msg .copy-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: var(--accent2);
+        cursor: pointer;
+        font-size: 1em;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
+      .msg .copy-btn:hover {
+        opacity: 1;
       }
       #input-form {
         display: flex;
+        background: var(--panel);
+        padding: 16px 32px;
+        border-top: 1px solid var(--border);
       }
-      #username,
       #message {
         flex: 1;
-        padding: 8px;
-        margin-right: 8px;
-        border: 1px solid #ccc;
+        padding: 10px;
+        border: 1px solid var(--border);
         border-radius: 4px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 1em;
+        margin-right: 12px;
       }
       #send {
-        padding: 8px 16px;
+        padding: 10px 24px;
         border: none;
-        background: #007bff;
+        background: var(--accent);
         color: #fff;
         border-radius: 4px;
+        font-size: 1em;
         cursor: pointer;
+        font-family: var(--font);
+        font-weight: bold;
+        letter-spacing: 1px;
+        transition: background 0.2s;
       }
       #send:hover {
-        background: #0056b3;
+        background: var(--accent2);
+      }
+      .dark-toggle {
+        background: none;
+        border: none;
+        color: var(--accent2);
+        font-size: 1.2em;
+        cursor: pointer;
+        margin-left: 16px;
+      }
+      @media (max-width: 800px) {
+        #main {
+          flex-direction: column;
+        }
+        #sidebar {
+          width: 100%;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        #chat-panel {
+          padding: 0;
+        }
+        #chat-header,
+        #input-form,
+        #messages {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
       }
     </style>
   </head>
   <body>
-    <div id="chat-container">
-      <h2>Gun.js Decentralized Chat</h2>
-      <div id="auth-section">
-        <input type="text" id="auth-username" placeholder="Username" required />
-        <input
-          type="password"
-          id="auth-password"
-          placeholder="Password"
-          required
-        />
-        <button id="login-btn">Login</button>
-        <button id="register-btn">Register</button>
-        <span id="auth-status"></span>
+    <div id="main">
+      <div id="sidebar">
+        <h3>Teams</h3>
+        <ul id="team-list"></ul>
+        <button class="add-btn" id="add-team-btn">+ New Team</button>
+        <h3>Rooms</h3>
+        <ul id="room-list"></ul>
+        <button class="add-btn" id="add-room-btn">+ New Room</button>
       </div>
-      <div id="room-section" style="display: none; margin-top: 10px">
-        <input type="text" id="room-name" placeholder="Room name" required />
-        <button id="join-room-btn">Join Room</button>
-        <span id="room-status"></span>
-      </div>
-      <div id="chat-section" style="display: none">
-        <div id="room-title"></div>
+      <div id="chat-panel">
+        <div id="chat-header">
+          <h2 id="room-title">Select a room</h2>
+          <div id="user-list"></div>
+          <button class="dark-toggle" id="dark-toggle" title="Toggle dark mode">
+            🌙
+          </button>
+        </div>
         <div id="messages"></div>
-        <form id="input-form">
+        <form id="input-form" autocomplete="off">
           <input
             type="text"
             id="message"
-            placeholder="Type a message..."
+            placeholder="Type a message or code..."
             required
           />
           <button id="send" type="submit">Send</button>
         </form>
+        <div id="auth-section">
+          <input
+            type="text"
+            id="auth-username"
+            placeholder="Username"
+            required
+          />
+          <input
+            type="password"
+            id="auth-password"
+            placeholder="Password"
+            required
+          />
+          <button id="login-btn">Login</button>
+          <button id="register-btn">Register</button>
+          <span id="auth-status"></span>
+        </div>
+        <div id="room-section" style="display: none; margin-top: 10px">
+          <input type="text" id="room-name" placeholder="Room name" required />
+          <button id="join-room-btn">Join Room</button>
+          <span id="room-status"></span>
+        </div>
       </div>
     </div>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
-    <script>
-      // Use a public Gun relay peer for global connectivity
-      // Use a more reliable Gun relay (official relay and community relays)
-      const gun = Gun({
-        peers: ["https://chatroombackend-jf36.onrender.com/gun"],
-      });
-
-      // Show connection status in UI
-      let connected = false;
-      // ...existing code...
-      gun.on("hi", (peer) => {
-        connected = true;
-        console.log("Connected to peer:", peer.url);
-        if (roomStatus) roomStatus.textContent = "Connected to relay!";
-      });
-      gun.on("bye", (peer) => {
-        connected = false;
-        console.log("Disconnected from peer:", peer.url);
-        if (roomStatus) roomStatus.textContent = "Disconnected from relay!";
-      });
-
-      // Warn if not connected after 5 seconds
-      setTimeout(() => {
-        if (!connected && roomStatus) {
-          roomStatus.textContent =
-            "⚠️ Not connected to relay. Messages will NOT sync!";
-        }
-      }, 5000);
-      const user = gun.user();
-      let currentRoom = null;
-
-      // Elements
-      const authSection = document.getElementById("auth-section");
-      const authUsername = document.getElementById("auth-username");
-      const authPassword = document.getElementById("auth-password");
-      const loginBtn = document.getElementById("login-btn");
-      const registerBtn = document.getElementById("register-btn");
-      const authStatus = document.getElementById("auth-status");
-      const roomSection = document.getElementById("room-section");
-      const roomNameInput = document.getElementById("room-name");
-      const joinRoomBtn = document.getElementById("join-room-btn");
-      const roomStatus = document.getElementById("room-status");
-      const chatSection = document.getElementById("chat-section");
-      const roomTitle = document.getElementById("room-title");
-      const messagesDiv = document.getElementById("messages");
-      const form = document.getElementById("input-form");
-      const messageInput = document.getElementById("message");
-
-      // Auth handlers
-      loginBtn.onclick = async () => {
-        const username = authUsername.value.trim();
-        const password = authPassword.value;
-        if (!username || !password) return;
-        user.auth(username, password, (ack) => {
-          if (ack.err) {
-            authStatus.textContent = "Login failed!";
-          } else {
-            authStatus.textContent = "Logged in!";
-            authSection.style.display = "none";
-            roomSection.style.display = "";
-          }
-        });
-      };
-      registerBtn.onclick = async () => {
-        const username = authUsername.value.trim();
-        const password = authPassword.value;
-        if (!username || !password) return;
-        user.create(username, password, (ack) => {
-          if (ack.err) {
-            authStatus.textContent = "Register failed!";
-          } else {
-            authStatus.textContent = "Registered! Please login.";
-          }
-        });
-      };
-
-      // Room join handler
-      joinRoomBtn.onclick = () => {
-        const room = roomNameInput.value.trim();
-        if (!room) return;
-        currentRoom = room;
-        roomStatus.textContent = "";
-        roomSection.style.display = "none";
-        chatSection.style.display = "";
-        roomTitle.textContent = "Room: " + room;
-        messagesDiv.innerHTML = "";
-        listenForMessages();
-      };
-
-      // Listen for messages in the current room
-      function listenForMessages() {
-        messagesDiv.innerHTML = "";
-        if (!currentRoom) return;
-        const chat = gun.get("gun-chat-room-" + currentRoom);
-        chat.map().on((data, id) => {
-          if (!data || !data.message || !data.username) return;
-          const msg = document.createElement("div");
-          msg.textContent = `${data.username}: ${data.message}`;
-          messagesDiv.appendChild(msg);
-          messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        });
-      }
-
-      // Send a message
-      form.onsubmit = (e) => {
-        e.preventDefault();
-        if (!currentRoom) return;
-        const message = messageInput.value.trim();
-        if (!message) return;
-        const username = user.is && user.is.alias ? user.is.alias : "Anonymous";
-        const chat = gun.get("gun-chat-room-" + currentRoom);
-        chat.set({ username, message, timestamp: Date.now() });
-        messageInput.value = "";
-      };
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/webrtc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/axe.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/open.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/radix.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/radisk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/store.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/lib/rindexed.js"></script>
+    <script src="/platform-chat.js"></script>
   </body>
 </html>
