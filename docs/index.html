@@ -40,11 +40,13 @@
         margin: 0 0 16px 32px;
         font-size: 1.2em;
         letter-spacing: 1px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
       }
       #team-list,
       #room-list {
         list-style: none;
-        padding: 0 0 0 32px;
+        padding: 0 0 0 16px;
         margin: 0 0 24px 0;
       }
       #team-list li,
@@ -52,12 +54,34 @@
         margin-bottom: 8px;
         cursor: pointer;
         color: var(--text-dim);
-        transition: color 0.2s;
+        transition: color 0.2s, background 0.2s;
+        padding: 6px 12px 6px 32px;
+        border-radius: 6px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #team-list li::before {
+        content: "\1F465";
+        margin-right: 8px;
+        font-size: 1.1em;
+        color: var(--accent2);
+      }
+      #room-list li::before {
+        content: "#";
+        margin-right: 8px;
+        color: var(--accent);
+        font-weight: bold;
       }
       #team-list li.active,
-      #room-list li.active,
-      #team-list li:hover,
-      #room-list li:hover {
+      #room-list li.active {
+        color: var(--accent);
+        background: #23272e99;
+      }
+      #team-list li.unread,
+      #room-list li.unread {
+        font-weight: bold;
         color: var(--accent2);
       }
       #sidebar .add-btn {
@@ -87,6 +111,7 @@
         margin: 0;
         font-size: 1.3em;
         color: var(--accent);
+        letter-spacing: 1px;
       }
       #user-list {
         display: flex;
@@ -104,6 +129,7 @@
         font-weight: bold;
         font-size: 1em;
         border: 2px solid var(--accent2);
+        box-shadow: 0 2px 8px #0002;
       }
       #messages {
         flex: 1;
@@ -115,19 +141,43 @@
       }
       .msg {
         margin-bottom: 18px;
-        padding: 12px 16px;
+        padding: 12px 16px 12px 56px;
         background: var(--panel);
-        border-radius: 6px;
+        border-radius: 8px;
         border-left: 4px solid var(--accent2);
         color: var(--text);
         font-size: 1em;
         position: relative;
         word-break: break-word;
+        box-shadow: 0 2px 8px #0001;
+      }
+      .msg .avatar {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--border);
+        color: var(--accent2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1em;
+        border: 2px solid var(--accent2);
       }
       .msg .meta {
-        font-size: 0.85em;
-        color: var(--text-dim);
+        font-size: 0.95em;
+        color: var(--accent2);
         margin-bottom: 4px;
+        font-weight: bold;
+      }
+      .msg .timestamp {
+        color: var(--text-dim);
+        font-size: 0.85em;
+        float: right;
+        font-weight: normal;
       }
       .msg .copy-btn {
         position: absolute;
@@ -143,6 +193,24 @@
       }
       .msg .copy-btn:hover {
         opacity: 1;
+      }
+      .msg code {
+        background: #22242a;
+        color: var(--accent2);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: var(--font);
+        font-size: 0.98em;
+      }
+      .msg pre {
+        background: #22242a;
+        color: var(--accent2);
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-family: var(--font);
+        font-size: 0.98em;
+        margin: 8px 0 0 0;
+        white-space: pre-wrap;
       }
       #input-form {
         display: flex;
@@ -256,7 +324,34 @@
           <button class="dark-toggle" id="dark-toggle" title="Toggle dark mode">
             🌙
           </button>
+          <button
+            id="copy-room-link"
+            title="Copy room link"
+            style="
+              margin-left: 12px;
+              background: none;
+              border: none;
+              color: var(--accent2);
+              font-size: 1.2em;
+              cursor: pointer;
+            "
+          >
+            🔗
+          </button>
         </div>
+        <div
+          id="room-topic-bar"
+          style="
+            padding: 8px 32px;
+            color: var(--accent2);
+            background: var(--panel);
+            display: none;
+          "
+        ></div>
+        <div
+          id="pinned-messages"
+          style="padding: 8px 32px; background: var(--panel); display: none"
+        ></div>
         <div id="messages"></div>
         <form id="input-form" autocomplete="off">
           <input
